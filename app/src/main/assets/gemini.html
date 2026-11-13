@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gemini</title>
+<style>
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;color-scheme:dark}
+.stage{position:fixed;inset:0;container-type:inline-size}
+.stage::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.55));animation:fadein .4s ease both}
+@keyframes fadein{from{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Gemini pop-up (shared with assets/gemini.html) */
+@property --ga{syntax:'<angle>';inherits:false;initial-value:0deg}
+.gem{position:absolute;left:50%;bottom:4cqw;width:54cqw;z-index:38;border-radius:2.4cqw;padding:1.8cqw 2.2cqw 2cqw;color:#fff;font-family:Inter,system-ui,sans-serif;
+  background:rgba(17,17,23,.96);box-shadow:0 2.4cqw 6cqw rgba(0,0,0,.6);opacity:0;transform:translate(-50%,3cqw) scale(.96);pointer-events:none;
+  transition:opacity .35s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.34,1.35,.64,1)}
+.gem.open{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.gem::before{content:"";position:absolute;inset:-.18cqw;border-radius:inherit;z-index:-1;padding:.18cqw;
+  background:conic-gradient(from var(--ga),#4f8bff,#a26bff,#ff6fa8,#ffb86b,#4f8bff);animation:gspin 4s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.gem.open{animation:gglow 5s ease-in-out infinite alternate}
+@keyframes gglow{0%{box-shadow:0 2.4cqw 6cqw rgba(0,0,0,.6),0 0 4cqw rgba(79,139,255,.28)}50%{box-shadow:0 2.4cqw 6cqw rgba(0,0,0,.6),0 0 4cqw rgba(162,107,255,.32)}100%{box-shadow:0 2.4cqw 6cqw rgba(0,0,0,.6),0 0 4cqw rgba(255,111,168,.3)}}
+.gem.busy{animation-duration:1.2s}
+.gmode{font-size:1cqw;letter-spacing:.12em;text-transform:uppercase;padding:.35cqw .9cqw;border-radius:99px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);transition:background .4s,color .4s}
+.gem.cw .gmode{background:linear-gradient(135deg,#4f8bff,#a26bff);color:#fff}
+.gsteps{display:flex;flex-wrap:wrap;gap:.6cqw}
+.gstep{display:inline-flex;align-items:center;gap:.5cqw;padding:.45cqw 1cqw;border-radius:99px;font-size:1.05cqw;background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);animation:gpop .45s cubic-bezier(.34,1.35,.64,1) both}
+.gstep i{width:1.3cqw;height:1.3cqw;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.85cqw;box-sizing:border-box}
+.gstep.run i{border:.18cqw solid #fff;border-top-color:transparent;animation:spin .8s linear infinite}
+.gstep.done{background:rgba(255,255,255,.16);color:#fff}.gstep.done i{background:#fff;color:#111}
+.gstep.fail{background:rgba(255,90,90,.2);color:#ffb3b3}.gstep.fail i{background:#ff5a5a;color:#fff}
+@keyframes gpop{from{opacity:0;transform:translateY(.8cqw) scale(.9)}}
+.gem.cw.busy{animation-duration:.9s}
+@keyframes gspin{to{--ga:360deg}}
+.ghead{display:flex;align-items:center;gap:1cqw;margin-bottom:1.2cqw}
+.gstar{width:2.6cqw;height:2.6cqw}
+.ghead b{font-family:Sora,Inter,sans-serif;font-weight:400;font-size:1.7cqw;letter-spacing:-.01em}
+.gstate{margin-left:auto;font-size:1.05cqw;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:.8cqw}
+.gdots{display:inline-flex;gap:.35cqw}
+.gdots i{width:.6cqw;height:.6cqw;border-radius:50%;background:linear-gradient(135deg,#4f8bff,#ff6fa8);opacity:.35}
+.gem.listening .gdots i,.gem.busy .gdots i{animation:gbounce .9s ease-in-out infinite}
+.gdots i:nth-child(2){animation-delay:.15s!important}.gdots i:nth-child(3){animation-delay:.3s!important}
+@keyframes gbounce{50%{transform:translateY(-.5cqw);opacity:1}}
+.gq{font-family:Sora,Inter,sans-serif;font-weight:300;font-size:2.2cqw;letter-spacing:-.02em;line-height:1.25;min-height:2.8cqw}
+.gq .part{color:rgba(255,255,255,.45)}
+.ga{font-size:1.45cqw;line-height:1.55;color:rgba(255,255,255,.9);margin-top:1cqw;max-height:15cqw;overflow:hidden}
+.ga:empty{display:none}
+.gsrc{display:flex;flex-wrap:wrap;gap:.6cqw;margin-top:1cqw}
+.gsrc:empty{display:none}
+.gsrc span{font-size:1cqw;padding:.35cqw .9cqw;border-radius:99px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+.gform{display:none;margin-top:1.2cqw}
+.gem.typing .gform{display:flex}
+.gform input{flex:1;min-width:0;background:rgba(255,255,255,.08);border:0;outline:none;border-radius:99px;padding:.9cqw 1.4cqw;color:#fff;font:inherit;font-size:1.4cqw;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.gacts{display:flex;flex-wrap:wrap;gap:.7cqw;margin-top:1.4cqw}
+.gacts button{font:inherit;color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);border:0;cursor:pointer;padding:.7cqw 1.3cqw;border-radius:99px;font-size:1.15cqw;transition:background .25s,color .25s,transform .4s cubic-bezier(.34,1.35,.64,1)}
+.gacts button.f,.gacts button:focus-visible{background:#fff;color:#111;transform:translateY(-.2cqw);outline:none}
+.gacts button.sug{background:linear-gradient(135deg,rgba(79,139,255,.18),rgba(255,111,168,.18))}
+.gacts button.sug.f{background:#fff}
+.gnote{margin-top:1cqw;font-size:1cqw;color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="gem" id="gem" role="dialog" aria-label="Gemini">
+    <div class="ghead"><svg class="gstar" viewBox="0 0 24 24"><defs><linearGradient id="gstarG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f8bff"/><stop offset=".55" stop-color="#a26bff"/><stop offset="1" stop-color="#ff6fa8"/></linearGradient></defs><path d="M12 1.5c.6 5.6 4.9 9.9 10.5 10.5-5.6.6-9.9 4.9-10.5 10.5C11.4 16.9 7.1 12.6 1.5 12 7.1 11.4 11.4 7.1 12 1.5z" fill="url(#gstarG)"/></svg><b>Gemini</b><span class="gmode" id="gmode">Ask</span><span class="gstate"><span class="gdots"><i></i><i></i><i></i></span><span id="gstate">Listening</span></span></div>
+    <div class="gq" id="gq"></div>
+    <div class="ga" id="ga"></div>
+    <div class="gsrc" id="gsrc"></div>
+    <form class="gform" id="gform"><input id="gin" autocomplete="off" spellcheck="false" placeholder="Type your question and press OK"></form>
+    <div class="gacts" id="gacts"></div>
+    <div class="gnote" id="gnote"></div>
+  </div>
+</div>
+<script>
+/* Over another app, Cowork hands the request to the Maison launcher, which carries it out on screen. */
+window.GemCowork=function(q,hist,io){ var s=io.step('Open Maison'); if(window.MaisonBridge&&MaisonBridge.handToLauncher) MaisonBridge.handToLauncher(q); s.done(true); return Promise.resolve('Handing over to Maison…'); };
+/* ---------- Gemini pop-up (shared with assets/gemini.html) ---------- */
+(function(){
+  var B=window.MaisonBridge||null, el=document.getElementById('gem'); if(!el) return;
+  var $g=function(id){return document.getElementById(id)}, open=false, acts=[], af=0, hist=[], cbN=0, timer=null, speakOn=false;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function state(t,cls){ $g('gstate').textContent=t; el.classList.remove('listening','busy'); if(cls) el.classList.add(cls); }
+  var SUG=['What’s the weather tomorrow?','Anime like Frieren','Who won the game last night?','Turn the lights to 30%'];
+  function setActs(list){ acts=list; af=0; renderActs(); }
+  function renderActs(){ var w=$g('gacts'); w.innerHTML=acts.map(function(a,i){return '<button type="button" class="'+(a.sug?'sug':'')+(i===af?' f':'')+'" data-i="'+i+'">'+esc(a.t)+'</button>'}).join('');
+    [].forEach.call(w.children,function(b){ b.addEventListener('click',function(e){ e.stopPropagation(); af=+b.dataset.i; acts[af].go(); }); }); }
+  var SAMPLE=null, DICT=null, TTS=null, dictOn=false, dictText='';
+  if(!B&&window.claude&&claude.use){
+    claude.use('sample').then(function(s){ SAMPLE=s; if(open) note(); }).catch(function(){});
+    claude.use('tts').then(function(t){ TTS=t; }).catch(function(){});
+    claude.use('dictation').then(function(dd){ DICT=dd; if(!dd) return;
+      dd.onPartial(function(e){ window.gemPartial((dictText+' '+e.text).trim()); });
+      dd.onFinal(function(e){ dictText=(dictText+' '+e.text).trim(); window.gemPartial(dictText); });
+      dd.onState(function(e){ if(e.state==='listening'){ dictOn=true; state('Listening','listening'); }
+        else if(e.state==='idle'){ var was=dictOn; dictOn=false; var t=dictText; dictText=''; if(open) setActs(baseActs().concat(sugActs())); if(was) window.gemFinal(t); } });
+      if(open) setActs(baseActs().concat(sugActs())); }).catch(function(){});
+  }
+  function note(){ $g('gnote').textContent=B?(B.hasGeminiKey&&!B.hasGeminiKey()?'Add your Gemini API key in Maison → Settings → Gemini to get live answers.':''):SAMPLE?'Preview: live answers come from Claude standing in for Gemini, without web search. The TV app uses real Gemini with Google Search.':'Preview: answers here are samples. On the TV, Gemini answers live with Google Search.'; }
+  function speakDict(){ if(dictOn){ DICT.stop().catch(function(){}); return; }
+    dictText=''; $g('ga').textContent=''; $g('gsrc').innerHTML=''; $g('gq').innerHTML='<span class="part">Listening… press OK again to stop</span>'; state('Listening','listening');
+    DICT.start().then(function(){ setActs(baseActs().concat(sugActs())); }).catch(function(e){ dictOn=false; window.gemError(e&&e.code==='not_granted'?'Microphone not allowed. Type instead.':'The mic didn’t start. Try again or type.'); }); }
+  var cowork=false, running=null; try{ cowork=localStorage.getItem('maison-cowork')==='1'; }catch(e){}
+  function setMode(on){ cowork=on; try{ localStorage.setItem('maison-cowork',on?'1':'0'); }catch(e){} el.classList.toggle('cw',on); $g('gmode').textContent=on?'Cowork · drives the TV':'Ask'; if(!running) state(on?'Cowork ready':'Ready'); setActs(baseActs().concat(sugActs())); }
+  function baseActs(){ var a=[]; if(running) return [{t:'■ Stop',go:function(){ running.abort(); }}]; if(window.GemCowork) a.push({t:cowork?'⚙ Cowork on':'⚙ Cowork off',go:function(){ setMode(!cowork); }}); if(B&&B.listen) a.push({t:'🎤 Ask again',go:listen}); else if(DICT) a.push({t:dictOn?'■ Stop listening':'🎤 Speak',go:speakDict}); a.push({t:'⌨ Type instead',go:typeMode}); a.push({t:speakOn?'🔊 Reading answers':'🔈 Read answers aloud',go:function(){ speakOn=!speakOn; if(!speakOn&&B&&B.stopSpeaking) B.stopSpeaking(); if(!speakOn&&TTS) try{ TTS.stop(); }catch(e){} setActs(baseActs().concat(sugActs())); }}); a.push({t:'Close',go:close}); return a; }
+  var CWSUG=['Movie night: dim the lights and resume Frieren','Play some jazz and set a 30 minute sleep timer','Open YouTube Music','Lock the door and start the screensaver'];
+  function sugActs(){ return (cowork?CWSUG:SUG).map(function(s){return {t:s,sug:true,go:function(){ ask(s); }}}); }
+  function show(quiet){ if(open) return; open=true; el.classList.add('open'); el.classList.remove('typing'); $g('gq').innerHTML=''; $g('ga').textContent=''; $g('gsrc').innerHTML='';
+    note();
+    setMode(cowork); if(B&&B.listen&&!quiet) listen(); else { state('Ready'); $g('gq').innerHTML='<span class="part">Ask anything…</span>'; } }
+  function close(){ if(!open) return; open=false; el.classList.remove('open'); clearInterval(timer); if(B&&B.stopListening) B.stopListening(); if(B&&B.stopSpeaking) B.stopSpeaking(); if(dictOn&&DICT) DICT.stop().catch(function(){}); if(TTS) try{ TTS.stop(); }catch(e){} if(window.GemOnClose) window.GemOnClose(); }
+  function listen(){ el.classList.remove('typing'); state('Listening','listening'); $g('gq').innerHTML='<span class="part">Listening…</span>'; $g('ga').textContent=''; $g('gsrc').innerHTML=''; try{ B.listen(); }catch(e){ typeMode(); } }
+  function typeMode(){ el.classList.add('typing'); state('Type'); setTimeout(function(){ $g('gin').focus(); },50); }
+  $g('gform').addEventListener('submit',function(e){ e.preventDefault(); var v=$g('gin').value.trim(); $g('gin').value=''; $g('gin').blur(); el.classList.remove('typing'); if(v) ask(v); });
+  $g('gin').addEventListener('keydown',function(e){ if(e.key==='Escape'){ e.preventDefault(); el.classList.remove('typing'); $g('gin').blur(); } });
+  function typeOut(text){ clearInterval(timer); var a=$g('ga'), i=0; a.textContent=''; timer=setInterval(function(){ i+=3; a.textContent=text.slice(0,i); if(i>=text.length) clearInterval(timer); },16); }
+  function demo(q){ var l=q.toLowerCase();
+    if(/weather|rain|temperature/.test(l)) return 'Sample answer: tomorrow looks cool and cloudy, around 11°, with light rain in the morning that clears by the afternoon.';
+    if(/anime|frieren/.test(l)) return 'Sample answer: if you liked Frieren, try Mushishi, Violet Evergarden or The Apothecary Diaries. All three are slow, warm and beautifully animated.';
+    if(/light|lamp/.test(l)) return 'Sample answer: done. On the TV, Gemini can hand home commands to the Maison assistant.';
+    return 'Sample answer. In the TV app this question goes to Gemini with Google Search, and the reply appears here in a second or two.'; }
+  function ask(q){ el.classList.remove('typing'); $g('gq').textContent=q; $g('ga').textContent=''; $g('gsrc').innerHTML=''; state('Searching the web','busy');
+    if(cowork&&window.GemCowork){ var ctl=new AbortController(), stopped=false; ctl.signal.addEventListener('abort',function(){ stopped=true; });
+      running=ctl; setActs(baseActs()); state('Working on the TV','busy'); var stepsEl=document.createElement('div'); stepsEl.className='gsteps'; $g('gsrc').innerHTML=''; $g('gsrc').appendChild(stepsEl);
+      var io={signal:ctl.signal,stopped:function(){return stopped},text:function(){},
+        step:function(label){ var s=document.createElement('span'); s.className='gstep run'; s.innerHTML='<i></i>'+esc(label); stepsEl.appendChild(s);
+          return {done:function(ok,msg){ s.className='gstep '+(ok?'done':'fail'); s.querySelector('i').textContent=ok?'✓':'!'; if(msg) s.title=msg; }}; }};
+      window.GemCowork(q,hist,io).then(function(t){ hist.push({role:'user',text:q},{role:'model',text:t}); hist=hist.slice(-8); typeOut(t); if(speakOn&&TTS) TTS.speak(t.slice(0,2000)).catch(function(){}); })
+        .catch(function(e){ typeOut(stopped||(e&&e.code==='aborted')?'Stopped.':e&&e.code==='rate_limited'?'Too many requests. Wait a moment.':e&&e.code==='not_granted'?'Allow Claude for this page to use Cowork.':'Cowork couldn’t finish. Try again.'); })
+        .then(function(){ running=null; state(cowork?'Cowork ready':'Ready'); setActs(baseActs().concat(sugActs())); });
+      return; }
+    if(window.GemHome&&window.GemHome(q)){ state('Ready'); typeOut('Done — sent to your home controls.'); return; }
+    if((!B||!B.ask)&&SAMPLE){ clearInterval(timer);
+      var msgs=hist.map(function(h){return {role:h.role==='model'?'assistant':'user',content:h.text}});
+      msgs.push({role:'user',content:'You are the voice assistant pop-up on a living-room TV. Answer in one to three short, plain sentences that read well on a TV screen. No markdown, no lists, no links. Today is '+new Date().toDateString()+'. You cannot browse the web here: if the question needs live information such as news, scores or weather, say briefly that live data needs the TV app, then give the most useful general answer.\n\nQuestion: '+q});
+      SAMPLE(msgs,{modelTier:'quick',cache:false,onText:function(e){ $g('ga').textContent=e.text; }}).then(function(r){ state('Ready'); var t=(r.text||'').trim(); $g('ga').textContent=t;
+          hist.push({role:'user',text:q},{role:'model',text:t}); hist=hist.slice(-8); $g('gsrc').innerHTML='<span>Live answer · Claude in preview</span>';
+          if(speakOn&&TTS) TTS.speak(t.slice(0,2000)).catch(function(){}); })
+        .catch(function(e){ state('Ready'); if(e&&e.code==='not_granted'){ SAMPLE=null; note(); typeOut(demo(q)); } else typeOut(e&&e.code==='rate_limited'?'Too many questions at once. Wait a moment and ask again.':'I couldn’t get an answer just now. Try again.'); });
+      return; }
+    if(!B||!B.ask){ setTimeout(function(){ state('Ready'); typeOut(demo(q)); if(speakOn&&TTS) TTS.speak(demo(q)).catch(function(){}); },900); return; }
+    var id='g'+(++cbN); window.maisonCbs[id]=function(r){ state('Ready'); if(r.error){ typeOut(r.error); return; } hist.push({role:'user',text:q},{role:'model',text:r.text}); hist=hist.slice(-8);
+      typeOut(r.text); $g('gsrc').innerHTML=(r.sources||[]).slice(0,4).map(function(s){return '<span>'+esc(s.title||s.uri)+'</span>'}).join(''); if(speakOn&&B.speak) B.speak(r.text); };
+    B.ask(id,q,JSON.stringify(hist)); }
+  window.maisonCbs=window.maisonCbs||{};
+  window.maisonCb=window.maisonCb||function(id,json){ var f=window.maisonCbs[id]; if(f){ delete window.maisonCbs[id]; f(JSON.parse(json)); } };
+  // speech callbacks from Android
+  window.gemPartial=function(t){ $g('gq').innerHTML='<span class="part">'+esc(t)+'</span>'; };
+  window.gemFinal=function(t){ if(t) ask(t); else { state('Ready'); $g('gq').innerHTML='<span class="part">I didn’t catch that. Ask again or type.</span>'; } };
+  window.gemError=function(m){ state('Ready'); $g('gq').innerHTML='<span class="part">'+esc(m||'Microphone not available. Type instead.')+'</span>'; };
+  function key(k){ if(k==='back'||k==='home'){ close(); return; }
+    if(k==='left'||k==='up') af=Math.max(0,af-1); else if(k==='right'||k==='down') af=Math.min(acts.length-1,af+1); else if(k==='ok'){ acts[af]&&acts[af].go(); return; } renderActs(); }
+  window.Gem={open:show,close:close,key:key,isOpen:function(){return open},ask:ask,cowork:function(q){ if(!open) show(true); setMode(true); ask(q); },relisten:function(){ if(!open) show(); else if(B&&B.listen) listen(); }};
+})();
+
+window.GemOnClose=function(){ if(window.MaisonBridge) MaisonBridge.close(); };
+var KM={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',Enter:'ok',Escape:'back',GoBack:'back'};
+document.addEventListener('keydown',function(e){ if(e.target.tagName==='INPUT') return; var k=KM[e.key]; if(!k) return; e.preventDefault(); Gem.key(k); });
+Gem.open();
+</script>
+</body>
+</html>

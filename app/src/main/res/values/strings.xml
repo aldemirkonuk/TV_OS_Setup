@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Maison</string>
+    <string name="override_label">Maison home button</string>
+    <string name="override_desc">Opens Maison whenever the built-in home screen appears, and lets you hold the assistant button for the Gemini pop-up. It only reacts to the Home screen and the assistant button; it does not read or collect anything on your screen or anything you type.</string>
+</resources>
